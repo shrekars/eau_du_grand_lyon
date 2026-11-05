@@ -1,0 +1,26 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = ["tools", ".git", ".storage"]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "ASYNC", # flake8-async
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+    "UP006", # non-pep585-annotation (Home Assistant compatibility)
+    "UP035", # deprecated import
+]
+
+[tool.ruff.isort]
+combine-as-imports = true
+known-first-party = ["custom_components.eau_du_grand_lyon"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+norecursedirs = [".git"]
