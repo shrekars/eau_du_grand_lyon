@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import base64
+from datetime import date, datetime, time, timedelta, timezone
 import hashlib
 import logging
 import os
-from datetime import date, datetime, time, timedelta, timezone
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 from zoneinfo import ZoneInfo
-from typing import Any
 
+from homeassistant.components.recorder.models import (
+    StatisticData,
+    StatisticMeanType,
+    StatisticMetaData,
+)
+from homeassistant.components.recorder.statistics import async_add_external_statistics
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
@@ -18,24 +24,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from homeassistant.components.recorder.models import (
-    StatisticData,
-    StatisticMetaData,
-    StatisticMeanType,
-)
-from homeassistant.components.recorder.statistics import async_add_external_statistics
-
 from .const import (
     AUTH_AUTHENTIFICATION,
     AUTH_AUTHORIZE,
     AUTH_TOKEN,
     BASE_URL,
     CONF_CLIENT_ID,
-    CONF_CONTRAT_ID,
     CONF_PASSWORD,
     CONF_USERNAME,
     DEFAULT_CLIENT_ID,
-    DEFAULT_CONTRAT_ID,
     DEFAULT_DAYS_BACK,
     DOMAIN,
     REDIRECT_URI,

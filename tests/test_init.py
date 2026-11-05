@@ -1,5 +1,6 @@
 """Test setup and unload for Eau du Grand Lyon integration."""
 from unittest.mock import AsyncMock, patch
+
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.eau_du_grand_lyon.const import (
