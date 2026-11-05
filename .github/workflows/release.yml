@@ -120,7 +120,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.release_info.outputs.SKIP_RELEASE != 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.release_info.outputs.TAG }}
           name: ${{ steps.release_info.outputs.NAME }}
