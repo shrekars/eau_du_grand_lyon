@@ -1,0 +1,131 @@
+name: CI & Automated Release Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # -------------------------------------------------------------
+  # Étape 1 : Tests et Qualité du code
+  # -------------------------------------------------------------
+  lint:
+    name: Code Quality (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff check
+        run: ruff check .
+
+  tests:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
+
+      - name: Run Pytest
+        run: pytest -v tests/
+
+  validate-hacs:
+    name: HACS Action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: HACS validation
+        uses: "hacs/action@main"
+        with:
+          category: "integration"
+
+  validate-hassfest:
+    name: Hassfest validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Hassfest validation
+        uses: "home-assistant/actions/hassfest@master"
+
+  # -------------------------------------------------------------
+  # Étape 2 : Création Automatique de Release (Bêta ou Stable)
+  # -------------------------------------------------------------
+  publish:
+    name: Publish Release
+    needs: [lint, tests, validate-hacs, validate-hassfest]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version and determine release type
+        id: release_info
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('custom_components/eau_du_grand_lyon/manifest.json'))['version'])")
+          echo "Manifest version is $VERSION"
+
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            TAG="v${VERSION}-b${{ github.run_number }}"
+            IS_PRERELEASE="true"
+            NAME="v${VERSION}-b${{ github.run_number }} (Bêta)"
+          else
+            TAG="v${VERSION}"
+            IS_PRERELEASE="false"
+            NAME="v${VERSION}"
+          fi
+
+          # Vérifier si le tag officiel existe déjà sur main pour éviter les doublons accidentels
+          if [ "${{ github.ref_name }}" = "main" ] && git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "SKIP_RELEASE=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG exists already, skipping release creation."
+          else
+            echo "SKIP_RELEASE=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+          echo "IS_PRERELEASE=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "NAME=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        if: steps.release_info.outputs.SKIP_RELEASE != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.TAG }}
+          name: ${{ steps.release_info.outputs.NAME }}
+          prerelease: ${{ steps.release_info.outputs.IS_PRERELEASE == 'true' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
