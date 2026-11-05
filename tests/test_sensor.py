@@ -1,4 +1,5 @@
 """Tests for Eau du Grand Lyon sensor parsing helpers and calculations."""
+
 from datetime import date
 
 from custom_components.eau_du_grand_lyon.sensor import (
