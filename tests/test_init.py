@@ -11,7 +11,7 @@ from custom_components.eau_du_grand_lyon.const import (
 )
 
 
-async def test_setup_and_unload_entry(hass):
+async def test_setup_and_unload_entry(hass, aioclient_mock):
     """Test successful setup and unload of config entry."""
     entry = MockConfigEntry(
         domain=DOMAIN,
