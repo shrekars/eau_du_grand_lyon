@@ -25,9 +25,15 @@ async def test_form_user_success(hass):
     assert result["type"] == data_entry_flow.FlowResultType.FORM
     assert result["step_id"] == "user"
 
-    with patch(
-        "custom_components.eau_du_grand_lyon.config_flow._async_validate_input",
-        return_value=None,
+    with (
+        patch(
+            "custom_components.eau_du_grand_lyon.config_flow._async_validate_input",
+            return_value=None,
+        ),
+        patch(
+            "custom_components.eau_du_grand_lyon.async_setup_entry",
+            return_value=True,
+        ),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
