@@ -232,42 +232,6 @@ class EGLDataUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("Eau du Grand Lyon: contrat actif detecte : %s", c_id)
         return c_id
 
-        # Sauvegarder dans le cache persistant
-        try:
-            await self._store.async_save(
-                {"token_type": token_type, "access_token": access_token}
-            )
-        except Exception as save_err:
-            _LOGGER.debug("Impossible d'enregistrer le token dans le store : %s", save_err)
-
-    async def _async_get_active_contract_id(self) -> str:
-        """Découvre dynamiquement l'identifiant de contrat actif (chiffré dynamiquement par session)."""
-        url_contrats = f"{BASE_URL}/application/rest/produits/contrats"
-        resp = await self._session.get(url_contrats, headers=self._auth_headers)
-
-        if resp.status == 401:
-            _LOGGER.debug("Contrats: 401 -> token expire, renouvellement login")
-            await self._store.async_remove()
-            await self._async_login()
-            resp = await self._session.get(url_contrats, headers=self._auth_headers)
-
-        if resp.status != 200:
-            body = await resp.text()
-            raise UpdateFailed(
-                f"Erreur recuperation contrats : HTTP {resp.status} body={body[:200]}"
-            )
-
-        contrats = await resp.json()
-        if not isinstance(contrats, list) or not contrats:
-            raise UpdateFailed("Aucun contrat d'eau trouve sur ce compte Eau du Grand Lyon")
-
-        c_id = contrats[0].get("id")
-        if not c_id:
-            raise UpdateFailed(f"Format de contrat inattendu : {contrats[0]}")
-
-        _LOGGER.debug("Eau du Grand Lyon: contrat actif detecte : %s", c_id)
-        return c_id
-
     def _daily_range_params(self) -> dict[str, str]:
         """
         Fenêtre sur jours complets en Europe/Paris, convertie en UTC.
