@@ -18,7 +18,6 @@ from .const import (
     AUTH_AUTHORIZE,
     AUTH_TOKEN,
     BASE_URL,
-    CONF_CLIENT_ID,
     CONF_PASSWORD,
     CONF_USERNAME,
     DEFAULT_CLIENT_ID,

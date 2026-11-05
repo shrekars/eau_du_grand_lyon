@@ -37,10 +37,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Run Ruff check
-        uses: astral-sh/ruff-action@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          args: "check ."
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff check
+        run: ruff check .
 
   tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
