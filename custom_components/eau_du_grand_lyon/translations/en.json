@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Eau du Grand Lyon",
+        "description": "Enter your Eau du Grand Lyon online portal credentials.",
+        "data": {
+          "username": "Email address",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Eau du Grand Lyon server.",
+      "invalid_auth": "Invalid authentication credentials (wrong email or password).",
+      "rate_limit": "Maximum simultaneous connections reached. Please wait 10-15 minutes.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Eau du Grand Lyon account is already configured."
+    }
+  }
+}
+

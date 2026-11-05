@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à Eau du Grand Lyon",
+        "description": "Renseignez vos identifiants de l'espace client en ligne Eau du Grand Lyon.",
+        "data": {
+          "username": "Adresse email",
+          "password": "Mot de passe"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter au serveur Eau du Grand Lyon.",
+      "invalid_auth": "Identifiants invalides (email ou mot de passe incorrect).",
+      "rate_limit": "Nombre maximum de connexions simultanées atteint. Patientez 10-15 minutes.",
+      "unknown": "Une erreur inattendue est survenue."
+    },
+    "abort": {
+      "already_configured": "Ce compte Eau du Grand Lyon est déjà configuré."
+    }
+  }
+}
+
