@@ -7,10 +7,15 @@ import hashlib
 import logging
 import os
 from datetime import date, datetime, time, timedelta, timezone
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 from zoneinfo import ZoneInfo
-from typing import Any
 
+from homeassistant.components.recorder.models import (
+    StatisticData,
+    StatisticMetaData,
+)
+from homeassistant.components.recorder.statistics import async_add_external_statistics
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
@@ -18,12 +23,13 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from homeassistant.components.recorder.models import (
-    StatisticData,
-    StatisticMetaData,
-    StatisticMeanType,
-)
-from homeassistant.components.recorder.statistics import async_add_external_statistics
+try:
+    from homeassistant.components.recorder.models import StatisticMeanType
+
+    HAS_MEAN_TYPE = True
+except ImportError:
+    StatisticMeanType = None
+    HAS_MEAN_TYPE = False
 
 from .const import (
     AUTH_AUTHENTIFICATION,
@@ -31,11 +37,9 @@ from .const import (
     AUTH_TOKEN,
     BASE_URL,
     CONF_CLIENT_ID,
-    CONF_CONTRAT_ID,
     CONF_PASSWORD,
     CONF_USERNAME,
     DEFAULT_CLIENT_ID,
-    DEFAULT_CONTRAT_ID,
     DEFAULT_DAYS_BACK,
     DOMAIN,
     REDIRECT_URI,
@@ -195,42 +199,6 @@ class EGLDataUpdateCoordinator(DataUpdateCoordinator):
             "Accept": "application/json, text/plain, */*",
         }
         self._logged_in = True
-
-        # Sauvegarder dans le cache persistant
-        try:
-            await self._store.async_save(
-                {"token_type": token_type, "access_token": access_token}
-            )
-        except Exception as save_err:
-            _LOGGER.debug("Impossible d'enregistrer le token dans le store : %s", save_err)
-
-    async def _async_get_active_contract_id(self) -> str:
-        """Découvre dynamiquement l'identifiant de contrat actif (chiffré dynamiquement par session)."""
-        url_contrats = f"{BASE_URL}/application/rest/produits/contrats"
-        resp = await self._session.get(url_contrats, headers=self._auth_headers)
-
-        if resp.status == 401:
-            _LOGGER.debug("Contrats: 401 -> token expire, renouvellement login")
-            await self._store.async_remove()
-            await self._async_login()
-            resp = await self._session.get(url_contrats, headers=self._auth_headers)
-
-        if resp.status != 200:
-            body = await resp.text()
-            raise UpdateFailed(
-                f"Erreur recuperation contrats : HTTP {resp.status} body={body[:200]}"
-            )
-
-        contrats = await resp.json()
-        if not isinstance(contrats, list) or not contrats:
-            raise UpdateFailed("Aucun contrat d'eau trouve sur ce compte Eau du Grand Lyon")
-
-        c_id = contrats[0].get("id")
-        if not c_id:
-            raise UpdateFailed(f"Format de contrat inattendu : {contrats[0]}")
-
-        _LOGGER.debug("Eau du Grand Lyon: contrat actif detecte : %s", c_id)
-        return c_id
 
         # Sauvegarder dans le cache persistant
         try:
@@ -446,16 +414,19 @@ class EGLDataUpdateCoordinator(DataUpdateCoordinator):
             return
 
         stat_id = f"{DOMAIN}:water_consumption"
-        metadata = StatisticMetaData(
-            has_mean=False,
-            mean_type=StatisticMeanType.NONE,
-            has_sum=True,
-            name="Eau du Grand Lyon (Consommation)",
-            source=DOMAIN,
-            statistic_id=stat_id,
-            unit_of_measurement=UnitOfVolume.LITERS,
-            unit_class="volume",
-        )
+        meta_kwargs: dict[str, Any] = {
+            "has_mean": False,
+            "has_sum": True,
+            "name": "Eau du Grand Lyon (Consommation)",
+            "source": DOMAIN,
+            "statistic_id": stat_id,
+            "unit_of_measurement": UnitOfVolume.LITERS,
+        }
+        if HAS_MEAN_TYPE and StatisticMeanType is not None and hasattr(StatisticMeanType, "NONE"):
+            meta_kwargs["mean_type"] = StatisticMeanType.NONE
+            meta_kwargs["unit_class"] = "volume"
+
+        metadata = StatisticMetaData(**meta_kwargs)
 
         try:
             async_add_external_statistics(self.hass, metadata, stats)
