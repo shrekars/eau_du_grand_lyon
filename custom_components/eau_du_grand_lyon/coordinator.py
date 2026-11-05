@@ -13,7 +13,6 @@ from zoneinfo import ZoneInfo
 
 from homeassistant.components.recorder.models import (
     StatisticData,
-    StatisticMeanType,
     StatisticMetaData,
 )
 from homeassistant.components.recorder.statistics import async_add_external_statistics
@@ -23,6 +22,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+try:
+    from homeassistant.components.recorder.models import StatisticMeanType
+
+    HAS_MEAN_TYPE = True
+except ImportError:
+    StatisticMeanType = None
+    HAS_MEAN_TYPE = False
 
 from .const import (
     AUTH_AUTHENTIFICATION,
@@ -407,16 +414,19 @@ class EGLDataUpdateCoordinator(DataUpdateCoordinator):
             return
 
         stat_id = f"{DOMAIN}:water_consumption"
-        metadata = StatisticMetaData(
-            has_mean=False,
-            mean_type=StatisticMeanType.NONE,
-            has_sum=True,
-            name="Eau du Grand Lyon (Consommation)",
-            source=DOMAIN,
-            statistic_id=stat_id,
-            unit_of_measurement=UnitOfVolume.LITERS,
-            unit_class="volume",
-        )
+        meta_kwargs: dict[str, Any] = {
+            "has_mean": False,
+            "has_sum": True,
+            "name": "Eau du Grand Lyon (Consommation)",
+            "source": DOMAIN,
+            "statistic_id": stat_id,
+            "unit_of_measurement": UnitOfVolume.LITERS,
+        }
+        if HAS_MEAN_TYPE and StatisticMeanType is not None and hasattr(StatisticMeanType, "NONE"):
+            meta_kwargs["mean_type"] = StatisticMeanType.NONE
+            meta_kwargs["unit_class"] = "volume"
+
+        metadata = StatisticMetaData(**meta_kwargs)
 
         try:
             async_add_external_statistics(self.hass, metadata, stats)
