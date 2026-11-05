@@ -1,0 +1,4 @@
+# Global code owner for the repository
+# Ensures only @shrekars can approve and merge Pull Requests
+* @shrekars
+

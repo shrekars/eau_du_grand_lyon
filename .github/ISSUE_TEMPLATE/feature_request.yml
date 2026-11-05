@@ -1,0 +1,31 @@
+name: 💡 Demande de fonctionnalité
+description: Suggérer une idée ou une amélioration pour l'intégration Eau du Grand Lyon.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci pour votre contribution au projet !
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Votre demande est-elle liée à un besoin ou problème précis ?
+      description: Une description claire de ce que vous aimeriez pouvoir accomplir.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution ou fonctionnalité suggérée
+      description: Décrivez comment vous imaginez le fonctionnement de cette amélioration.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
+      description: Avez-vous exploré d'autres solutions de contournement ?
+
