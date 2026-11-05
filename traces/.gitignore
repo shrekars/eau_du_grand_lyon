@@ -1,0 +1,6 @@
+# Ignorer les traces réseau et fichiers d'archives contenant des tokens ou identifiants
+*.har
+*.jsonl
+*.log
+!manifest.json
+

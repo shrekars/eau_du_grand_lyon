@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Home Assistant local storage & tests
+.storage/
+.pytest_cache/
+*.log
+
+# Traces réseau et données sensibles
+traces/*.har
+traces/*.jsonl
+tools/extracted_*
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

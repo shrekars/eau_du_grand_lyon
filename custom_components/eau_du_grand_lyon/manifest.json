@@ -1,0 +1,20 @@
+{
+  "domain": "eau_du_grand_lyon",
+  "name": "Eau du Grand Lyon",
+  "categories": [
+    "water",
+    "energy"
+  ],
+  "codeowners": [
+    "@shrekars"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "recorder"
+  ],
+  "documentation": "https://github.com/shrekars/eau_du_grand_lyon",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/shrekars/eau_du_grand_lyon/issues",
+  "version": "1.0.0"
+}
