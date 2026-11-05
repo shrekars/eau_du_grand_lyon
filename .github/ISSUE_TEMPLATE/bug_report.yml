@@ -1,0 +1,52 @@
+name: 🐛 Rapport de bug
+description: Signaler une anomalie ou un dysfonctionnement de l'intégration Eau du Grand Lyon.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce problème. 
+        ⚠️ **Rappel important : Ne partagez JAMAIS vos identifiants réels (mots de passe, tokens, cookies) dans cette issue.**
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Version de Home Assistant
+      placeholder: "ex: 2026.3.0 ou 2024.11.2"
+    validations:
+      required: true
+
+  - type: input
+    id: integration_version
+    attributes:
+      label: Version de l'intégration Eau du Grand Lyon
+      placeholder: "ex: 1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du problème
+      description: Expliquez clairement ce qui ne fonctionne pas.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire l'anomalie
+      placeholder: |
+        1. Aller dans Paramètres > Appareils et services
+        2. Configurer le compte
+        3. Constater l'erreur...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Journaux (Logs Home Assistant)
+      description: Copiez les logs pertinents (Paramètres > Système > Journaux). Masquez vos adresses emails ou mots de passe.
+      render: shell
+
