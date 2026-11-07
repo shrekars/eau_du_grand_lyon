@@ -1,8 +1,11 @@
 """Tests for Eau du Grand Lyon sensor parsing helpers and calculations."""
 
 from datetime import date
+from unittest.mock import MagicMock
 
 from custom_components.eau_du_grand_lyon.sensor import (
+    EGLWaterCurrentYearConsumptionSensor,
+    EGLWaterLastReadingDateSensor,
     _extract_daily_points,
     _extract_monthly_points,
     _get_daily_units,
@@ -84,4 +87,48 @@ def test_month_key():
     point = {"annee": 2024, "mois": 4}  # Mai
     assert _month_key(point) == "2024-05"
     assert _month_key({}) is None
+
+
+def test_last_reading_date_sensor():
+    """Test last reading date sensor extraction."""
+    coordinator = MagicMock()
+    coordinator.entry.entry_id = "test_entry"
+    coordinator.data = {
+        "raw_journalier": {
+            "postes": [
+                {
+                    "data": [
+                        {"annee": 2026, "mois": 10, "jour": 3, "consommation": 100},
+                        {"annee": 2026, "mois": 10, "jour": 4, "consommation": 120},
+                    ]
+                }
+            ]
+        }
+    }
+    sensor = EGLWaterLastReadingDateSensor(coordinator)
+    assert sensor.native_value == date(2026, 11, 4)
+
+
+def test_current_year_consumption_sensor():
+    """Test current year consumption sum."""
+    this_year = date.today().year
+    coordinator = MagicMock()
+    coordinator.entry.entry_id = "test_entry"
+    coordinator.data = {
+        "raw": {
+            "postes": [
+                {
+                    "data": [
+                        {"annee": this_year, "mois": 0, "consommation": 5.2},
+                        {"annee": this_year, "mois": 1, "consommation": 4.8},
+                        {"annee": this_year - 1, "mois": 11, "consommation": 10.0},
+                    ]
+                }
+            ]
+        }
+    }
+    sensor = EGLWaterCurrentYearConsumptionSensor(coordinator)
+    assert sensor.native_value == 10.0
+    assert sensor.extra_state_attributes["months_count"] == 2
+
 
