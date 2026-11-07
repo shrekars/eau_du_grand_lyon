@@ -173,6 +173,7 @@ class EGLWaterIndexTotalIncreasingSensor(EGLBaseEntity, RestoreSensor):
     _attr_name = "Eau (index)"
     _attr_unique_id = "egl_water_index_l_v5"
     _attr_device_class = SensorDeviceClass.WATER
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = UnitOfVolume.LITERS
     _attr_suggested_display_precision = 0
 
@@ -266,6 +267,67 @@ class EGLWaterLastDayConsumptionSensor(EGLBaseEntity, SensorEntity):
             "raw_consumption_unit": cons_u,
             "raw_index_unit": idx_u,
         }
+
+
+class EGLWaterLastReadingDateSensor(EGLBaseEntity, SensorEntity):
+    """Date du dernier relevé de compteur."""
+
+    _attr_name = "Eau (date du dernier relevé)"
+    _attr_unique_id = "egl_water_last_reading_date"
+    _attr_device_class = SensorDeviceClass.DATE
+    _attr_icon = "mdi:calendar-check"
+
+    @property
+    def native_value(self) -> date | None:
+        raw_j = (self.coordinator.data or {}).get("raw_journalier")
+        points = _extract_daily_points(raw_j)
+        if not points:
+            return None
+        return _point_to_consumption_day(points[-1])
+
+
+class EGLWaterCurrentYearConsumptionSensor(EGLBaseEntity, SensorEntity):
+    """Consommation totale cumulée de l'année civile en cours en m³."""
+
+    _attr_name = "Eau (année en cours)"
+    _attr_unique_id = "egl_water_current_year_m3"
+    _attr_device_class = SensorDeviceClass.WATER
+    _attr_state_class = SensorStateClass.TOTAL
+    _attr_native_unit_of_measurement = UnitOfVolume.CUBIC_METERS
+    _attr_suggested_display_precision = 3
+
+    @property
+    def native_value(self) -> float | None:
+        raw = (self.coordinator.data or {}).get("raw")
+        points = _extract_monthly_points(raw)
+        if not points:
+            return None
+        current_year = date.today().year
+        year_points = [
+            p
+            for p in points
+            if p.get("annee") == current_year and isinstance(p.get("consommation"), (int, float))
+        ]
+        if not year_points:
+            return 0.0
+        return round(sum(float(p["consommation"]) for p in year_points), 3)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        current_year = date.today().year
+        raw = (self.coordinator.data or {}).get("raw")
+        points = _extract_monthly_points(raw)
+        months_included = [
+            f"{p.get('annee')}-{p.get('mois', 0) + 1:02d}"
+            for p in points
+            if p.get("annee") == current_year
+        ]
+        return {
+            "year": current_year,
+            "months_count": len(months_included),
+            "months": months_included,
+        }
+
 
 
 class EGLWaterTotalIncreasingSensor(EGLBaseEntity, RestoreSensor):
@@ -471,6 +533,8 @@ async def async_setup_entry(
     entities: list[SensorEntity] = [
         EGLWaterIndexTotalIncreasingSensor(coordinator),  # Energy -> Water
         EGLWaterLastDayConsumptionSensor(coordinator),
+        EGLWaterLastReadingDateSensor(coordinator),
+        EGLWaterCurrentYearConsumptionSensor(coordinator),
         EGLWaterTotalIncreasingSensor(coordinator),
         EGLMonthlyConsumptionLastSensor(coordinator),
     ]
