@@ -16,5 +16,6 @@
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/shrekars/eau_du_grand_lyon/issues",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
+

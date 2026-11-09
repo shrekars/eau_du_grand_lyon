@@ -45,7 +45,9 @@ L'intégration injecte nativement les données historiques dans le **tableau de 
 
 1. Allez dans **Paramètres > Tableaux de bord > Énergie**.
 2. Dans la section **Consommation d'eau**, cliquez sur **Ajouter une source d'eau**.
-3. Sélectionnez la statistique : **Eau du Grand Lyon (Consommation)** (`eau_du_grand_lyon:water_consumption`).
+3. Deux options s'offrent à vous :
+   * **Recommandé (Précision historique)** : Sélectionnez la statistique externe **Eau du Grand Lyon (Consommation)** (`eau_du_grand_lyon:water_consumption`). Les données télérelevées passées (J-1 / J-2) sont injectées rétroactivement à leur date et heure exactes, évitant tout décalage temporel ou pic artificiel le lundi.
+   * **Alternative (Entité d'index direct)** : Sélectionnez le capteur **Eau (index)** (`sensor.eau_index`).
 4. Définissez le coût de l'eau :
    * **3,44 € / m³** : coût réel de chaque m³ consommé (Tranche 2 en vigueur).
    * ou **3,65 € / m³** : coût moyen incluant l'amortissement de l'abonnement annuel fixe.
@@ -59,8 +61,11 @@ Toutes les entités sont automatiquement regroupées sous l'appareil **Eau du Gr
 
 | Entité | Nom | Description |
 |---|---|---|
+| `sensor.eau_index` | Eau (index) | Index relevé du compteur (en Litres, `total_increasing`) |
 | `sensor.eau_dernier_jour` | Eau (dernier jour) | Volume en litres du dernier jour télé-relevé (avec date, débit min et fuite) |
-| `sensor.eau_index` | Eau (index) | Index relevé du compteur (en Litres) |
+| `sensor.eau_date_du_dernier_releve` | Eau (date du dernier relevé) | Date calendaire du dernier télérelevé disponible (`device_class: date`) |
+| `sensor.eau_annee_en_cours` | Eau (année en cours) | Cumul des consommations de l'année civile en cours en m³ |
+| `binary_sensor.eau_alerte_fuite` | Eau (alerte fuite) | Alerte binaire immédiate si une fuite d'eau est suspectée par Téléo (`device_class: problem`) |
 | `sensor.eau_total` | Eau (total) | Cumul total des consommations en m³ (avec attribut `history_12_months`) |
 | `sensor.conso_mois_dernier` | Conso mois dernier | Volume consommé le mois précédent en m³ |
 | `sensor.conso_m_0` à `sensor.conso_m_11` | Conso M-0 à M-11 | Consommations mensuelles sur les 12 derniers mois glissants |
