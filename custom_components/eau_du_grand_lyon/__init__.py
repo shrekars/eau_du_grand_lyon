@@ -8,7 +8,7 @@ from homeassistant.helpers.storage import Store
 from .const import DOMAIN
 from .coordinator import EGLDataUpdateCoordinator
 
-PLATFORMS: list[str] = ["sensor"]
+PLATFORMS: list[str] = ["sensor", "binary_sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
