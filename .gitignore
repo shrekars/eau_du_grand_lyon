@@ -11,7 +11,7 @@ __pycache__/
 # Traces réseau et données sensibles
 traces/*.har
 traces/*.jsonl
-tools/extracted_*
+tools/
 
 # IDE & OS
 .vscode/
