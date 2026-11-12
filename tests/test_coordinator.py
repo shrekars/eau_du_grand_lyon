@@ -2,8 +2,10 @@
 
 from datetime import date, datetime, time, timezone
 from unittest.mock import MagicMock, patch
-from zoneinfo import ZoneInfo
 
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.eau_du_grand_lyon.const import DOMAIN
 from custom_components.eau_du_grand_lyon.coordinator import (
     TZ_PARIS,
     EGLDataUpdateCoordinator,
@@ -40,13 +42,15 @@ RAW_DAILY_FIXTURE = {
 }
 
 
-def test_insert_statistics_dates_alignment():
+async def test_insert_statistics_dates_alignment(hass):
     """Verify that every daily consumption point is attached to day D at 23:00 (Europe/Paris), never D+1."""
-    hass = MagicMock()
-    entry = MagicMock()
-    entry.entry_id = "test_entry"
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="test_entry")
 
-    coordinator = EGLDataUpdateCoordinator(hass, entry)
+    with patch(
+        "custom_components.eau_du_grand_lyon.coordinator.async_get_clientsession",
+        return_value=MagicMock(),
+    ):
+        coordinator = EGLDataUpdateCoordinator(hass, entry)
 
     captured_stats = []
 
@@ -100,11 +104,9 @@ def test_insert_statistics_dates_alignment():
     assert p3.start.astimezone(TZ_PARIS).date() != date(2026, 11, 10)
 
 
-def test_insert_statistics_with_gap():
+async def test_insert_statistics_with_gap(hass):
     """Verify gap handling in telemetry days."""
-    hass = MagicMock()
-    entry = MagicMock()
-    entry.entry_id = "test_entry"
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="test_entry")
 
     raw_with_gap = {
         "postes": [
@@ -130,7 +132,12 @@ def test_insert_statistics_with_gap():
         ]
     }
 
-    coordinator = EGLDataUpdateCoordinator(hass, entry)
+    with patch(
+        "custom_components.eau_du_grand_lyon.coordinator.async_get_clientsession",
+        return_value=MagicMock(),
+    ):
+        coordinator = EGLDataUpdateCoordinator(hass, entry)
+
     captured_stats = []
 
     with patch(
