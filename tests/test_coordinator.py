@@ -70,38 +70,38 @@ async def test_insert_statistics_dates_alignment(hass):
     expected_baseline_dt = datetime.combine(
         date(2026, 11, 7), time(0, 0), tzinfo=TZ_PARIS
     ).astimezone(timezone.utc)
-    assert baseline.start == expected_baseline_dt
-    assert baseline.sum == 638900.0
+    assert baseline["start"] == expected_baseline_dt
+    assert baseline["sum"] == 638900.0
 
     # Point 1: 7 Nov consumption (100 L) must be at 7 Nov 23:00 Paris
     p1 = captured_stats[1]
     expected_p1_dt = datetime.combine(
         date(2026, 11, 7), time(23, 0), tzinfo=TZ_PARIS
     ).astimezone(timezone.utc)
-    assert p1.start == expected_p1_dt
-    assert p1.sum == 639000.0
+    assert p1["start"] == expected_p1_dt
+    assert p1["sum"] == 639000.0
     # Crucial check: Local calendar date must be 7 Nov, NOT 8 Nov!
-    assert p1.start.astimezone(TZ_PARIS).date() == date(2026, 11, 7)
+    assert p1["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 7)
 
     # Point 2: 8 Nov consumption (200 L) must be at 8 Nov 23:00 Paris
     p2 = captured_stats[2]
     expected_p2_dt = datetime.combine(
         date(2026, 11, 8), time(23, 0), tzinfo=TZ_PARIS
     ).astimezone(timezone.utc)
-    assert p2.start == expected_p2_dt
-    assert p2.sum == 639200.0
-    assert p2.start.astimezone(TZ_PARIS).date() == date(2026, 11, 8)
+    assert p2["start"] == expected_p2_dt
+    assert p2["sum"] == 639200.0
+    assert p2["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 8)
 
     # Point 3: 9 Nov consumption (271 L) must be at 9 Nov 23:00 Paris
     p3 = captured_stats[3]
     expected_p3_dt = datetime.combine(
         date(2026, 11, 9), time(23, 0), tzinfo=TZ_PARIS
     ).astimezone(timezone.utc)
-    assert p3.start == expected_p3_dt
-    assert p3.sum == 639471.0
+    assert p3["start"] == expected_p3_dt
+    assert p3["sum"] == 639471.0
     # Crucial check: 271 L is attached to 9 Nov, NEVER to 10 Nov!
-    assert p3.start.astimezone(TZ_PARIS).date() == date(2026, 11, 9)
-    assert p3.start.astimezone(TZ_PARIS).date() != date(2026, 11, 10)
+    assert p3["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 9)
+    assert p3["start"].astimezone(TZ_PARIS).date() != date(2026, 11, 10)
 
 
 async def test_insert_statistics_with_gap(hass):
@@ -152,7 +152,7 @@ async def test_insert_statistics_with_gap(hass):
     # 2: 8 Nov 00:00 (gap anchor: 1000)
     # 3: 8 Nov 23:00 (day 8: 1300)
     assert len(captured_stats) == 4
-    assert captured_stats[0].start.astimezone(TZ_PARIS).date() == date(2026, 11, 5)
-    assert captured_stats[1].start.astimezone(TZ_PARIS).date() == date(2026, 11, 5)
-    assert captured_stats[2].start.astimezone(TZ_PARIS).date() == date(2026, 11, 8)
-    assert captured_stats[3].start.astimezone(TZ_PARIS).date() == date(2026, 11, 8)
+    assert captured_stats[0]["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 5)
+    assert captured_stats[1]["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 5)
+    assert captured_stats[2]["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 8)
+    assert captured_stats[3]["start"].astimezone(TZ_PARIS).date() == date(2026, 11, 8)
