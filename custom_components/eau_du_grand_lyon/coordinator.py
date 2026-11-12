@@ -399,8 +399,9 @@ class EGLDataUpdateCoordinator(DataUpdateCoordinator):
             running_sum += day_conso
             state_val = idx_val if idx_val is not None else running_sum
 
-            # Fin du jour = début du jour suivant à 00:00:00
-            end_of_day_dt = datetime.combine(day + timedelta(days=1), time(0, 0), tzinfo=TZ_PARIS).astimezone(timezone.utc)
+            # Fin du jour de consommation : calé sur la dernière heure du jour même (23:00:00 Europe/Paris).
+            # Cela garantit que Home Assistant rattache la consommation au jour J réel et non à J+1.
+            end_of_day_dt = datetime.combine(day, time(23, 0), tzinfo=TZ_PARIS).astimezone(timezone.utc)
             stats.append(
                 StatisticData(
                     start=end_of_day_dt,
